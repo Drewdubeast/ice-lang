@@ -8,5 +8,12 @@
 
 import Foundation
 
-print("Hello, World!")
+let lex = Lexer(for: "5.132l ( ) int main def if 5 myInt () \n")
 
+let toks = lex.tokens
+
+if let tokens = toks {
+    for token in tokens {
+        print(token)
+    }
+}
