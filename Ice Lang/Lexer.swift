@@ -25,6 +25,7 @@ enum Token: Equatable {
     case identifier(String)
     case number(Double)
     case `operator`(BinaryOperator)
+    case other(Character)
     
     static func ==(lhs: Token, rhs: Token) -> Bool {
         switch (lhs, rhs) {
@@ -141,6 +142,8 @@ class Lexer {
                 return .identifier(str)
             }
         }
-        return nil
+        let tok = Token.other(input[index])
+        nextIndex()
+        return tok
     }
 }

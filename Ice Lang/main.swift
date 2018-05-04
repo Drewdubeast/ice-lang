@@ -8,7 +8,7 @@
 
 import Foundation
 
-let lexer = Lexer(for: "def main(): hello world")
+let lexer = Lexer(for: "x + y * 1 - 2")
 
 let toks = lexer.lex()
 

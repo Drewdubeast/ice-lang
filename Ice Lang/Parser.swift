@@ -12,7 +12,7 @@ enum ParsingError: Error {
     case ExpectedNumber
     case ExpectedIdentifier
     case UnexpectedToken
-    case UndefinedOperator(String)
+    case UndefinedOperator(Character)
     
     case ExpectedCharacter(Character)
     case ExpectedExpression
@@ -70,6 +70,30 @@ class Parser {
         return ret
     }
     
+    let operatorPrecendences: [BinaryOperator : Int] = [.plus : 20,
+                        .minus : 20,
+                        .mult : 40,
+                        .div : 40]
+    
+    func getPrecendence() throws -> Int {
+        guard hasNext() else {
+            return -1
+        }
+        
+        guard case let Token.operator(op) = peek() else {
+            return -1
+        }
+        
+        if case let Token.other(opchar) = peek() {
+            throw ParsingError.UndefinedOperator(opchar)
+        }
+        
+        guard let precedence = operatorPrecendences[op] else {
+            return 0
+        }
+        return precedence
+    }
+    
     func parseNumber() throws -> ExpressionNode {
         guard case let Token.number(value) = pop() else {
             throw ParsingError.ExpectedNumber
@@ -99,6 +123,11 @@ class Parser {
             throw ParsingError.ExpectedCharacter(")")
         }
         return expression
+    }
+    
+    func parseBinaryOpExpression(node: ExpressionNode, prec: Int = 0) throws -> ExpressionNode {
+        var lhs = node
+        
     }
     
     func parsePrimary() throws -> ExpressionNode {
