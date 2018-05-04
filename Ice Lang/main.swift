@@ -8,9 +8,9 @@
 
 import Foundation
 
-let lex = Lexer(for: "5.132l ( ) int main def if 5 myInt () \n")
+let lexer = Lexer(for: "def main(): hello world")
 
-let toks = lex.tokens
+let toks = lexer.lex()
 
 if let tokens = toks {
     for token in tokens {

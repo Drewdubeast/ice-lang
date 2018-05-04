@@ -21,7 +21,7 @@ enum BinaryOperator: UnicodeScalar {
 }
 
 enum Token: Equatable {
-    case leftParen, rightParen, def, extern, comma, semicolon, `if`, then, `else`
+    case leftParen, rightParen, def, extern, comma, semicolon, `if`, then, `else`, colon
     case identifier(String)
     case number(Double)
     case `operator`(BinaryOperator)
@@ -31,7 +31,7 @@ enum Token: Equatable {
         case (.leftParen, .leftParen), (.rightParen, .rightParen),
              (.def, .def), (.extern, .extern), (.comma, .comma),
              (.semicolon, .semicolon), (.if, .if), (.then, .then),
-             (.else, .else):
+             (.else, .else), (.colon, .colon):
             return true
         case let (.identifier(id1), .identifier(id2)):
             return id1 == id2
@@ -66,7 +66,7 @@ class Lexer {
         self.index = input.startIndex
     }
     
-    var tokens: [Token]? {
+    func lex() ->[Token]? {
         var toks = [Token]()
         while let nextTok = nextToken() {
             toks.append(nextTok)
@@ -113,7 +113,8 @@ class Lexer {
             ",": .comma, "(": .leftParen, ")": .rightParen,
             ";": .semicolon, "+": .operator(.plus), "-": .operator(.minus),
             "*": .operator(.mult), "/": .operator(.div),
-            "%": .operator(.mod), "=": .operator(.equals)
+            "%": .operator(.mod), "=": .operator(.equals),
+            ":": .colon
         ]
         
         //if current character is one of single-scalar tokens
