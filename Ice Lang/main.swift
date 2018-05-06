@@ -8,12 +8,14 @@
 
 import Foundation
 
-let lexer = Lexer(for: "x + y * 1 - 2")
+let lexer = Lexer(for: "def fib(x)")
 
 let toks = lexer.lex()
 
-if let tokens = toks {
-    for token in tokens {
-        print(token)
-    }
+let parser = Parser(for: toks!)
+
+do {
+    print(try parser.parseExpression())
+} catch {
+    print(error)
 }

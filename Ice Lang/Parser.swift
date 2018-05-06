@@ -15,36 +15,10 @@ enum ParsingError: Error {
     case UndefinedOperator(Character)
     
     case ExpectedCharacter(Character)
+    case ExpectedOperator
     case ExpectedExpression
     case ExpectedArgumentList
     case ExpectedFunctionName
-}
-
-protocol ExpressionNode: CustomStringConvertible {
-}
-
-struct NumberNode: ExpressionNode {
-    let value: Double
-    var description: String {
-        return "NumberNode(\(value))"
-    }
-}
-
-struct IdentifierNode: ExpressionNode {
-    let name: String
-    var description: String {
-        return "IdentifierNode(\(name))"
-    }
-}
-
-struct BinaryOperationNode: ExpressionNode {
-    let lhs: ExpressionNode
-    let rhs: ExpressionNode
-    let op: String
-    
-    var description: String {
-        return "BinaryOperationNode(\(op) lhs: \(lhs) rhs: \(rhs)"
-    }
 }
 
 class Parser {
@@ -75,7 +49,7 @@ class Parser {
                         .mult : 40,
                         .div : 40]
     
-    func getPrecendence() throws -> Int {
+    func getPrecedence() throws -> Int {
         guard hasNext() else {
             return -1
         }
@@ -109,7 +83,8 @@ class Parser {
     }
     
     func parseExpression() throws -> ExpressionNode {
-        return IdentifierNode(name: "Hi")
+        let node = try parsePrimary()
+        return try parseBinaryOpExpression(node: node)
     }
     
     func parseParenthesis() throws -> ExpressionNode {
@@ -125,13 +100,49 @@ class Parser {
         return expression
     }
     
-    func parseBinaryOpExpression(node: ExpressionNode, prec: Int = 0) throws -> ExpressionNode {
+    func parseBinaryOpExpression(node: ExpressionNode, exprPrec: Int = 0) throws -> ExpressionNode {
         var lhs = node
         
+        while true {
+            let prec = try getPrecedence()
+            
+            if(prec < exprPrec) {
+                return lhs
+            }
+            
+            //check if middle token is an operator
+            guard case let Token.operator(op) = pop() else {
+                throw ParsingError.ExpectedOperator
+            }
+            
+            var rhs = try parsePrimary()
+            
+            let nextPrec = try getPrecedence()
+            if(prec < nextPrec) {
+                rhs = try parseBinaryOpExpression(node: rhs, exprPrec: prec+1)
+            }
+            
+            lhs = BinaryOperationNode(lhs: lhs, rhs: rhs, op: op)
+        }
+    }
+    
+    func parsePrototype() throws -> ExpressionNode {
+        guard case Token.def = pop() else {
+            throw ParsingError.ExpectedExpression
+        }
+        guard case let Token.identifier(name) = pop() else {
+            throw ParsingError.ExpectedIdentifier
+        }
+        
+        let args = try parseParenthesis()
+        
+        return FunctionPrototypeNode(name: name)
     }
     
     func parsePrimary() throws -> ExpressionNode {
         switch(peek()) {
+        case .def:
+            return try parsePrototype()
         case .number:
             return try parseNumber()
         case .identifier:
