@@ -8,14 +8,14 @@
 
 import Foundation
 
-let lexer = Lexer(for: "fib")
+let lexer = Lexer(for: "x+y ;")
 
 let toks = lexer.lex()
 
 let parser = Parser(for: toks!)
 
 do {
-    print(try parser.parsePrimaryExpression())
+    print(try parser.parseExpression())
 } catch {
     print(error)
 }

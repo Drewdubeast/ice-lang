@@ -27,6 +27,12 @@ class Parser {
     var tokens: [Token]
     var index = 0
     
+    //precedences for different operators
+    let precedences: [BinaryOperator : Int] = [.plus : 20,
+                                               .minus : 20,
+                                               .div : 40,
+                                               .mult : 40]
+    
     init(for tokens: [Token]) {
         self.tokens = tokens
     }
@@ -43,6 +49,14 @@ class Parser {
         let ret = tokens[index]
         index+=1
         return ret
+    }
+    
+    func getTokenPrecedence(op: BinaryOperator) throws -> Int {
+        guard let precedence = precedences[op] else {
+            return -1
+        }
+        
+        return precedence
     }
     
     func parseNumber() throws -> ExpressionNode {
@@ -118,11 +132,33 @@ class Parser {
         return CallNode(name: name, args: args)
         
     }
-    
-    func parseExpression() throws -> ExpressionNode {
-        let expr = try parsePrimaryExpression()
+    func parseBinaryOperation(lhs: ExpressionNode, exprPrecedence: Int = 0) throws -> ExpressionNode {
+        var lhs = lhs
+        while true {
+            
+            guard case let Token.operator(op) = pop() else {
+                throw ParsingError.ExpectedOperator
+            }
+            
+            let prec = try getTokenPrecedence(op: op)
+            
+            if(prec < exprPrecedence) {
+                return lhs
+            }
         
-        return expr
+            var rhs = try parsePrimaryExpression()
+            
+            if case let Token.operator(op2) = pop() {
+                print("popped")
+                let nextPrec = try getTokenPrecedence(op: op2)
+                
+                if(prec < nextPrec) {
+                    rhs = try parseBinaryOperation(lhs: rhs)
+                }
+            }
+            
+            lhs = BinaryOperationNode(lhs: lhs, rhs: rhs, op: op)
+        }
     }
     
     func parsePrimaryExpression() throws -> ExpressionNode {
@@ -137,6 +173,13 @@ class Parser {
         }
         return node
     }
+    
+    func parseExpression() throws -> ExpressionNode {
+        let lhs = try parsePrimaryExpression()
+        
+        return try parseBinaryOperation(lhs: lhs)
+    }
+        
     
 //     Function -> Prototype Expression
 //     Prototype -> Define Identifier ( Arguments )
