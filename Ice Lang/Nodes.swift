@@ -35,10 +35,36 @@ struct BinaryOperationNode: ExpressionNode {
     }
 }
 
-struct FunctionPrototypeNode: ExpressionNode {
+struct CallNode: ExpressionNode {
+    let name: String
+    let args: [String]
+    
+    var description: String {
+        return "CallNode(\(name) \(args))"
+    }
+}
+
+struct VariableNode: ExpressionNode {
     let name: String
     
     var description: String {
+        return "VariableNode(\(name))"
+    }
+}
+
+struct PrototypeNode: CustomStringConvertible {
+    let name: String
+    let args: [String]
+    var description: String {
         return "FunctionPrototypeNode(\(name))"
+    }
+}
+
+struct FunctionNode: CustomStringConvertible {
+    let body: ExpressionNode
+    let prototype: PrototypeNode?
+    
+    var description: String {
+        return "FunctionNode(prototype: \(prototype)) body: \(body)"
     }
 }

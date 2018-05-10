@@ -16,6 +16,7 @@ enum ParsingError: Error {
     
     case ExpectedCharacter(Character)
     case ExpectedOperator
+    case ExpectedDeclaration
     case ExpectedExpression
     case ExpectedArgumentList
     case ExpectedFunctionName
@@ -42,6 +43,24 @@ class Parser {
         let ret = tokens[index]
         index+=1
         return ret
+    }
+    
+    func parse() throws -> [Any] {
+        index = 0
+        
+        var nodes = [Any]()
+        while index<tokens.count {
+            switch(peek()) {
+            case .def:
+                let node = try parseDefinition()
+                nodes.append(node)
+            default:
+                let expr = try parseTopLevelExpression()
+                nodes.append(expr)
+
+            }
+        }
+        return nodes
     }
     
     let operatorPrecendences: [BinaryOperator : Int] = [.plus : 20,
@@ -126,23 +145,87 @@ class Parser {
         }
     }
     
-    func parsePrototype() throws -> ExpressionNode {
-        guard case Token.def = pop() else {
-            throw ParsingError.ExpectedExpression
-        }
-        guard case let Token.identifier(name) = pop() else {
+    func readIdentifier() throws -> String {
+        guard case let Token.identifier(str) = pop() else {
             throw ParsingError.ExpectedIdentifier
         }
         
-        let args = try parseParenthesis()
+        return str
+    }
+    
+    func parseParensList<T>(read: () throws -> T) throws -> [T] {
         
-        return FunctionPrototypeNode(name: name)
+        guard case Token.leftParen = pop() else {
+            throw ParsingError.ExpectedCharacter("(")
+        }
+        if case Token.rightParen = peek() {
+            return []
+        }
+        
+        var args = [T]()
+        while true {
+            let element = try read()
+            args.append(element)
+            
+            if case Token.rightParen = pop() {
+                break
+            }
+            
+            guard case Token.comma = pop() else {
+                throw ParsingError.ExpectedArgumentList
+            }
+        }
+        guard case Token.rightParen = pop() else {
+            throw ParsingError.ExpectedCharacter(")")
+        }
+        return args
+    }
+    
+    func parseIdentifierOrFunction() throws -> ExpressionNode {
+        let name = try readIdentifier()
+        
+        guard hasNext() else {
+            return VariableNode(name: name)
+        }
+        
+        guard case Token.leftParen = pop() else {
+            return VariableNode(name: name)
+        }
+        
+        let args = try parseParensList(read: readIdentifier)
+        return CallNode(name: name, args: args)
+    }
+    
+    func parsePrototype() throws -> PrototypeNode {
+        guard case let Token.identifier(name) = pop() else {
+            throw ParsingError.ExpectedFunctionName
+        }
+        
+        let args = try parseParensList(read: readIdentifier)
+        
+        return PrototypeNode(name: name, args: args)
+    }
+    
+    func parseDefinition() throws -> FunctionNode {
+        guard case Token.def = pop() else {
+            throw ParsingError.ExpectedDeclaration
+        }
+        
+        let prototype = try parsePrototype()
+        let body = try parseExpression()
+        
+        return FunctionNode(body: body, prototype: prototype)
+    }
+    
+    func parseTopLevelExpression() throws -> FunctionNode {
+        let body = try parseExpression()
+        return FunctionNode(body: body, prototype: nil)
     }
     
     func parsePrimary() throws -> ExpressionNode {
         switch(peek()) {
         case .def:
-            return try parsePrototype()
+            return try parseIdentifierOrFunction()
         case .number:
             return try parseNumber()
         case .identifier:
