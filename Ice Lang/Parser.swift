@@ -51,7 +51,11 @@ class Parser {
         return ret
     }
     
-    func getTokenPrecedence(op: BinaryOperator) throws -> Int {
+    func getTokenPrecedence() -> Int {
+        guard case let Token.operator(op) = peek() else {
+            return -1
+        }
+        
         guard let precedence = precedences[op] else {
             return -1
         }
@@ -135,26 +139,21 @@ class Parser {
     func parseBinaryOperation(lhs: ExpressionNode, exprPrecedence: Int = 0) throws -> ExpressionNode {
         var lhs = lhs
         while true {
-            
-            guard case let Token.operator(op) = pop() else {
-                throw ParsingError.ExpectedOperator
-            }
-            
-            let prec = try getTokenPrecedence(op: op)
-            
+            let prec = getTokenPrecedence()
             if(prec < exprPrecedence) {
                 return lhs
             }
-        
-            var rhs = try parsePrimaryExpression()
+            _ = pop()
             
-            if case let Token.operator(op2) = pop() {
-                print("popped")
-                let nextPrec = try getTokenPrecedence(op: op2)
+            var rhs = try parsePrimaryExpression()
+
+            guard case let Token.operator(op) = pop() else {
+                return lhs
+            }
+            let nextPrec = getTokenPrecedence()
                 
-                if(prec < nextPrec) {
-                    rhs = try parseBinaryOperation(lhs: rhs)
-                }
+            if(prec < nextPrec) {
+                rhs = try parseBinaryOperation(lhs: rhs, exprPrecedence: prec+1)
             }
             
             lhs = BinaryOperationNode(lhs: lhs, rhs: rhs, op: op)
