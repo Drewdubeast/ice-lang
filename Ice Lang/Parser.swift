@@ -51,7 +51,30 @@ class Parser {
         return ret
     }
     
+    func parse() throws {
+        
+        while true {
+
+            switch(peek()) {
+            //function definition
+            case .def: print(try parseDefinition())
+                
+            //end of file
+            case .EOF: print("End of file"); return;
+                
+            //default case
+            default: print(try parseExpression())
+            }
+        }
+    }
+    
     func getTokenPrecedence() -> Int {
+        // handle all the cases here - because it should never throw an error
+        // it should always at least give a -1 so that the binary operation parser works
+        guard hasNext() else {
+            return -1
+        }
+        
         guard case let Token.operator(op) = peek() else {
             return -1
         }
@@ -98,6 +121,37 @@ class Parser {
         }
         return expr
     }
+
+    func parseParensArgList() throws -> [String] {
+        guard case Token.leftParen = pop() else {
+            throw ParsingError.ExpectedCharacter("(")
+        }
+        
+        var args = [String]()
+        
+        if case Token.rightParen = peek() {
+            return []
+        }
+        
+        while true {
+            
+            let arg = try parseExpression()
+            args.append(arg.description)
+            
+            if case Token.rightParen = peek() {
+                break
+            }
+            
+            guard case Token.comma = peek() else {
+                throw ParsingError.ExpectedCharacter(",")
+            }
+            
+            _ = pop() //pop and move to next character
+            
+        }
+        _ = pop()
+        return args
+    }
     
     func parseIdentifierExpression() throws -> ExpressionNode {
         guard case let Token.identifier(name) = pop() else {
@@ -106,9 +160,10 @@ class Parser {
         
         //check if current identifier is a variable
         //we can assume this if the identifier isn't followed by parens
-        guard case Token.leftParen = pop() else {
+        guard case Token.leftParen = peek() else {
             return VariableNode(name: name)
         }
+        _ = pop()
         
         var args = [String]()
         
@@ -139,17 +194,23 @@ class Parser {
     func parseBinaryOperation(lhs: ExpressionNode, exprPrecedence: Int = 0) throws -> ExpressionNode {
         var lhs = lhs
         while true {
+            //get precedence of next token
             let prec = getTokenPrecedence()
+            
+            //if the precedence is less than the expression precedence, then return the lhs
             if(prec < exprPrecedence) {
                 return lhs
             }
-            _ = pop()
-            
-            var rhs = try parsePrimaryExpression()
-
+        
+            //this is the binOp - eat it and save it
             guard case let Token.operator(op) = pop() else {
                 return lhs
             }
+            
+            //parse the expression after the binary operator
+            var rhs = try parsePrimaryExpression()
+
+            //get the next operator's precedence if there is one
             let nextPrec = getTokenPrecedence()
                 
             if(prec < nextPrec) {
@@ -165,7 +226,7 @@ class Parser {
         var node: ExpressionNode
         
         switch(peek()) {
-        case .identifier: node = try parseIdentifier()
+        case .identifier: node = try parseIdentifierExpression()
         case .number: node = try parseNumber()
         case .leftParen: node = try parseParens()
         default: throw ParsingError.ExpectedExpression
@@ -178,7 +239,30 @@ class Parser {
         
         return try parseBinaryOperation(lhs: lhs)
     }
+    
+    func parseDefinition() throws -> FunctionNode {
+        guard case Token.def = pop() else {
+            throw ParsingError.ExpectedDeclaration
+        }
+        let proto = try parsePrototype()
         
+        let e = try parseExpression()
+
+        return FunctionNode(body: e, prototype: proto)
+    }
+    
+    func parsePrototype() throws -> PrototypeNode {
+        guard case let Token.identifier(name) = pop() else {
+            throw ParsingError.ExpectedFunctionName
+        }
+        
+        //parse any args that this may have
+        let args = try parseParensArgList()
+        
+        return PrototypeNode(name: name, args: args)
+        
+    }
+    
     
 //     Function -> Prototype Expression
 //     Prototype -> Define Identifier ( Arguments )

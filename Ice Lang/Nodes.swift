@@ -31,7 +31,7 @@ struct BinaryOperationNode: ExpressionNode {
     let op: BinaryOperator
     
     var description: String {
-        return "BinaryOperationNode(\(op) lhs: \(lhs) rhs: \(rhs)"
+        return "BinaryOperationNode(\(op) lhs: \(lhs) rhs: \(rhs))"
     }
 }
 
