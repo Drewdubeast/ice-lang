@@ -51,14 +51,21 @@ class Parser {
         return ret
     }
     
-    func parse() throws {
+    func parse() throws -> File {
+        let file = File()
+        
         while hasNext() {
             switch(peek()) {
-            case .def: print(try parseDefinition()); guard case Token.semicolon = pop() else {throw ParsingError.ExpectedCharacter(";")}
-            case .EOF: return
-            default: print(try parseExpression()); guard case Token.semicolon = pop() else {throw ParsingError.ExpectedCharacter(";")}
+            case .def:
+                file.addDefinition(try parseDefinition())
+            case .EOF:
+                return file
+            default:
+                file.addExpression(try parseExpression());
             }
+            guard case Token.semicolon = pop() else {throw ParsingError.ExpectedCharacter(";")}
         }
+        return file
     }
     
     func getTokenPrecedence() -> Int {

@@ -8,14 +8,14 @@
 
 import Foundation
 
-let lexer = Lexer(for: "def fib() x*x; print; x+x; printf(2);")
+let lexer = Lexer(for: "def fib(x) x*x; print; x+x; printf(2);")
 
 let toks = lexer.lex()
 
 let parser = Parser(for: toks!)
 
 do {
-    try parser.parse()
+    print(try parser.parse())
 } catch {
     print(error)
 }
