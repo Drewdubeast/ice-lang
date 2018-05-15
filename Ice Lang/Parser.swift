@@ -122,6 +122,7 @@ class Parser {
         }
         var args = [E]()
         if case Token.rightParen = peek() {
+            _ = pop()
             return []
         }
         while true {
