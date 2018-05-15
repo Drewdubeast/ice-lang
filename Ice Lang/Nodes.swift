@@ -8,20 +8,16 @@
 
 import Foundation
 
-protocol ExpressionNode: CustomStringConvertible {
+protocol ASTNode {
+}
+
+protocol ExpressionNode: CustomStringConvertible, ASTNode {
 }
 
 struct NumberNode: ExpressionNode {
     let value: Double
     var description: String {
         return "NumberNode(\(value))"
-    }
-}
-
-struct IdentifierNode: ExpressionNode {
-    let name: String
-    var description: String {
-        return "IdentifierNode(\(name))"
     }
 }
 
@@ -37,7 +33,7 @@ struct BinaryOperationNode: ExpressionNode {
 
 struct CallNode: ExpressionNode {
     let name: String
-    let args: [String]
+    let args: [ExpressionNode]
     
     var description: String {
         return "CallNode(\(name) \(args))"
@@ -52,17 +48,17 @@ struct VariableNode: ExpressionNode {
     }
 }
 
-struct PrototypeNode: CustomStringConvertible {
+struct PrototypeNode: CustomStringConvertible, ASTNode {
     let name: String
     let args: [String]
     var description: String {
-        return "FunctionPrototypeNode(\(name))"
+        return "FunctionPrototypeNode(\(name) args: \(args))"
     }
 }
 
-struct FunctionNode: CustomStringConvertible {
+struct FunctionNode: CustomStringConvertible, ASTNode {
     let body: ExpressionNode
-    let prototype: PrototypeNode?
+    let prototype: PrototypeNode
     
     var description: String {
         return "FunctionNode(prototype: \(prototype)) body: \(body)"

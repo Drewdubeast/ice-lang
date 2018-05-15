@@ -52,18 +52,11 @@ class Parser {
     }
     
     func parse() throws {
-        
-        while true {
-
+        while hasNext() {
             switch(peek()) {
-            //function definition
-            case .def: print(try parseDefinition())
-                
-            //end of file
-            case .EOF: print("End of file"); return;
-                
-            //default case
-            default: print(try parseExpression())
+            case .def: print(try parseDefinition()); guard case Token.semicolon = pop() else {throw ParsingError.ExpectedCharacter(";")}
+            case .EOF: return
+            default: print(try parseExpression()); guard case Token.semicolon = pop() else {throw ParsingError.ExpectedCharacter(";")}
             }
         }
     }
@@ -97,14 +90,14 @@ class Parser {
         return NumberNode(value: num)
     }
     
-    func parseIdentifier() throws -> ExpressionNode {
+    func parseIdentifier() throws -> String {
 //        Parses a token and returns an identifier node for the
 //        string of the identifier
         guard case let Token.identifier(str) = pop() else {
             throw ParsingError.ExpectedIdentifier
         }
         
-        return IdentifierNode(name: str)
+        return str
     }
     
     func parseParens() throws -> ExpressionNode {
@@ -121,34 +114,29 @@ class Parser {
         }
         return expr
     }
-
-    func parseParensArgList() throws -> [String] {
+    
+    func parseArgsList<E>(_ fn: () throws -> E) throws -> [E] {
+        //eat opening paren
         guard case Token.leftParen = pop() else {
             throw ParsingError.ExpectedCharacter("(")
         }
-        
-        var args = [String]()
-        
+        var args = [E]()
         if case Token.rightParen = peek() {
             return []
         }
-        
         while true {
-            
-            let arg = try parseExpression()
-            args.append(arg.description)
+            let arg = try fn()
+            args.append(arg)
             
             if case Token.rightParen = peek() {
                 break
             }
-            
-            guard case Token.comma = peek() else {
+            //if no end paren, there must be a comma coming up
+            guard case Token.comma = pop() else {
                 throw ParsingError.ExpectedCharacter(",")
             }
-            
-            _ = pop() //pop and move to next character
-            
         }
+        //consume paren and leave
         _ = pop()
         return args
     }
@@ -163,31 +151,9 @@ class Parser {
         guard case Token.leftParen = peek() else {
             return VariableNode(name: name)
         }
-        _ = pop()
+        //grab args from the parens
+        let args = try parseArgsList(parseExpression)
         
-        var args = [String]()
-        
-        //if no args, return call node with empty args array
-        if case Token.rightParen = peek() {
-            return CallNode(name: name, args: [])
-        }
-        
-        while true {
-            
-            let arg = try parseExpression()
-            args.append(arg.description)
-            
-            if case Token.rightParen = peek() {
-                break
-            }
-            
-            guard case Token.comma = peek() else {
-                throw ParsingError.ExpectedCharacter(",")
-            }
-            
-            _ = pop() //pop and move to next character
-            
-        }
         return CallNode(name: name, args: args)
         
     }
@@ -245,7 +211,6 @@ class Parser {
             throw ParsingError.ExpectedDeclaration
         }
         let proto = try parsePrototype()
-        
         let e = try parseExpression()
 
         return FunctionNode(body: e, prototype: proto)
@@ -255,9 +220,8 @@ class Parser {
         guard case let Token.identifier(name) = pop() else {
             throw ParsingError.ExpectedFunctionName
         }
-        
         //parse any args that this may have
-        let args = try parseParensArgList()
+        let args = try parseArgsList(parseIdentifier)
         
         return PrototypeNode(name: name, args: args)
         

@@ -73,7 +73,6 @@ class Lexer {
         while let nextTok = nextToken() {
             toks.append(nextTok)
         }
-        //add end of file token
         toks.append(.EOF)
         return toks
     }
