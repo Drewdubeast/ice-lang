@@ -8,47 +8,7 @@
 
 import Foundation
 
-protocol ASTNode {
-}
-
-protocol ExpressionNode: CustomStringConvertible, ASTNode {
-}
-
-struct NumberNode: ExpressionNode {
-    let value: Double
-    var description: String {
-        return "NumberNode(\(value))"
-    }
-}
-
-struct BinaryOperationNode: ExpressionNode {
-    let lhs: ExpressionNode
-    let rhs: ExpressionNode
-    let op: BinaryOperator
-    
-    var description: String {
-        return "BinaryOperationNode(\(op) lhs: \(lhs) rhs: \(rhs))"
-    }
-}
-
-struct CallNode: ExpressionNode {
-    let name: String
-    let args: [ExpressionNode]
-    
-    var description: String {
-        return "CallNode(\(name) \(args))"
-    }
-}
-
-struct VariableNode: ExpressionNode {
-    let name: String
-    
-    var description: String {
-        return "VariableNode(\(name))"
-    }
-}
-
-struct PrototypeNode: CustomStringConvertible, ASTNode {
+struct PrototypeNode: CustomStringConvertible {
     let name: String
     let args: [String]
     var description: String {
@@ -56,11 +16,23 @@ struct PrototypeNode: CustomStringConvertible, ASTNode {
     }
 }
 
-struct FunctionNode: CustomStringConvertible, ASTNode {
-    let body: ExpressionNode
+struct FunctionNode: CustomStringConvertible{
+    let body: expr
     let prototype: PrototypeNode
     
     var description: String {
         return "FunctionNode(prototype: \(prototype)) body: \(body)"
     }
 }
+
+//enums for AST
+indirect enum expr {
+    case number(Double)
+    case identifier(String)
+    case call(String,[expr])
+    case binOp(expr, BinaryOperator, expr)
+    case ifelse(expr, expr, expr)
+    case variable(String)
+}
+
+

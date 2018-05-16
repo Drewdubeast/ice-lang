@@ -31,7 +31,8 @@ class Parser {
     let precedences: [BinaryOperator : Int] = [.plus : 20,
                                                .minus : 20,
                                                .div : 40,
-                                               .mult : 40]
+                                               .mult : 40,
+                                               .equals : 0]
     
     init(for tokens: [Token]) {
         self.tokens = tokens
@@ -86,7 +87,7 @@ class Parser {
         return precedence
     }
     
-    func parseNumber() throws -> ExpressionNode {
+    func parseNumber() throws -> expr {
 //          Parses a token - expects a number and if it is a number
 //          it returns a node for it
         
@@ -94,7 +95,7 @@ class Parser {
             throw ParsingError.ExpectedNumber
         }
         
-        return NumberNode(value: num)
+        return .number(num)
     }
     
     func parseIdentifier() throws -> String {
@@ -107,7 +108,7 @@ class Parser {
         return str
     }
     
-    func parseParens() throws -> ExpressionNode {
+    func parseParens() throws -> expr {
 //        Affirms that the current expression is inside parenthesis, if not, throws errors.
 //        returns an expression node
         guard case Token.leftParen = pop() else {
@@ -149,7 +150,7 @@ class Parser {
         return args
     }
     
-    func parseIdentifierExpression() throws -> ExpressionNode {
+    func parseIdentifierExpression() throws -> expr {
         guard case let Token.identifier(name) = pop() else {
             throw ParsingError.ExpectedIdentifier
         }
@@ -157,15 +158,15 @@ class Parser {
         //check if current identifier is a variable
         //we can assume this if the identifier isn't followed by parens
         guard case Token.leftParen = peek() else {
-            return VariableNode(name: name)
+            return .variable(name)
         }
         //grab args from the parens
         let args = try parseArgsList(parseExpression)
         
-        return CallNode(name: name, args: args)
+        return .call(name, args)
         
     }
-    func parseBinaryOperation(lhs: ExpressionNode, exprPrecedence: Int = 0) throws -> ExpressionNode {
+    func parseBinaryOperation(lhs: expr, exprPrecedence: Int = 0) throws -> expr {
         var lhs = lhs
         while true {
             //get precedence of next token
@@ -191,13 +192,13 @@ class Parser {
                 rhs = try parseBinaryOperation(lhs: rhs, exprPrecedence: prec+1)
             }
             
-            lhs = BinaryOperationNode(lhs: lhs, rhs: rhs, op: op)
+            lhs = expr.binOp(lhs, op, rhs)
         }
     }
     
-    func parsePrimaryExpression() throws -> ExpressionNode {
+    func parsePrimaryExpression() throws -> expr {
         //Parses a primary expression which can start in multiple ways
-        var node: ExpressionNode
+        var node: expr
         
         switch(peek()) {
         case .identifier: node = try parseIdentifierExpression()
@@ -208,7 +209,7 @@ class Parser {
         return node
     }
     
-    func parseExpression() throws -> ExpressionNode {
+    func parseExpression() throws -> expr {
         let lhs = try parsePrimaryExpression()
         
         return try parseBinaryOperation(lhs: lhs)

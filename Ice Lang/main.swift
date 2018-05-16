@@ -8,14 +8,18 @@
 
 import Foundation
 
-let lexer = Lexer(for: "def fib(x) x*x; print; x+x; printf(2);")
+let lexer = Lexer(for: "n=5; n+n;")
 
 let toks = lexer.lex()
 
 let parser = Parser(for: toks!)
 
 do {
-    print(try parser.parse())
+    let file = try parser.parse()
+    print(file)
+    print()
+    let analyzer = SemanticAnalyzer(with: file)
+    try analyzer.analyze()
 } catch {
     print(error)
 }

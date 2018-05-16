@@ -12,7 +12,7 @@ public class File: CustomStringConvertible {
     
     private(set) var prototypes = [String: PrototypeNode]()
     private(set) var definitions = [FunctionNode]()
-    private(set) var expressions = [ExpressionNode]()
+    private(set) var expressions = [expr]()
     
     func prototype(_ name: String) -> PrototypeNode? {
         return prototypes[name]
@@ -23,7 +23,7 @@ public class File: CustomStringConvertible {
         prototypes[functionNode.prototype.name] = functionNode.prototype
     }
     
-    func addExpression(_ expr: ExpressionNode) {
+    func addExpression(_ expr: expr) {
         expressions.append(expr)
     }
     
