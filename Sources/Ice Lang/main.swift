@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import LLVM
 
 let lexer = Lexer(for: "n=5; n+n;")
 
