@@ -15,6 +15,11 @@ enum SemanticError: Error {
     case IncorrectArgumentCount
 }
 
+enum Scope {
+    case main
+    case function(String)
+}
+
 class SemanticAnalyzer {
     //
     // Purpose of this class is to go through the file and make sure nothing is called/used
@@ -25,30 +30,96 @@ class SemanticAnalyzer {
     // -incorrect amount of arguments
     //
     
-    // STEPS:
-    // Do a walk over the AST and get variable names and function names
-    // Do another walk through and make sure that any calls to the variable have values
-    
-    
-    // Extra notes:
-    // Any thing defined at the scope of the file level would just be at the top level - so do a first
-    // walk through that just goes through the top level
-    // Anything that is used deeper in a tree must have it declared before referenced in a function or anything
     //
-    // Try parsing top level expressions first to get any declarations, and then parse deeper.
+    // Steps:
+    // 1. Grab each function and prototype and record number of arguments and symbols used
+    // 2. If any of the function calls have incorrect function name or arg count, throw error
+    // 3. Go through function bodies - if there are incorrect variables used there, throw error
     
-    var symbols: [String : Int]
+    var symbols: [String : [String : Int]] //function name and args associated with it
     
     let file: File
     
     init(with file: File) {
         self.file = file
-        symbols = [String : Int]()
+        symbols = [String : [String : Int]]()
     }
     func analyze() throws {
-        for expr in file.expressions {
-            if case let .binOp(lhs, op, rhs) = expr {
+        // Steps:
+        // 1. Go through file level function declarations and get their arguments
+        // 2. Use these args and add them to a symbol table
+        
+        //first get symbols from function arguments
+        for prototype in file.prototypes {
+            //add function names
+            let name = prototype.value.name
+            symbols[name] = [String : Int]()
+            //add function args
+            for arg in prototype.value.args {
+                symbols[name]![arg] = 1
             }
         }
+        
+        //check function bodies to ensure only argument variables used
+        for function in file.definitions {
+            let functionName = function.prototype.name
+            let body = function.body
+            
+            try parseExprForSymbols(body, functionName)
+        }
+        
+        //check expressions for calls with
+        /*
+        for expression in file.expressions {
+            parseExprForSymbols(expression)
+        }*/
+        
+        print(symbols)
     }
+    
+    func parseExprForSymbols(_ expr: expr, _ function: String) throws {
+        switch(expr) {
+        case .binOp:
+            guard case let .binOp(expr1, _, expr2) = expr else {
+                return
+            }
+            //parse binary operator for expr 1 and expr 2
+            try parseExprForSymbols(expr1, function)
+            try parseExprForSymbols(expr2, function)
+            
+        case .call:
+            
+            /*
+            guard case let .call(function, args) = expr else {
+                return
+            }
+            guard (symbols[function] != nil) else {
+                throw SemanticError.UndefinedFunction(function)
+            }
+            var count = 0
+            for arg in args {
+                guard (symbols[function]![arg] != nil) else {
+                    throw SemanticError.UndefinedVariable(arg)
+                }
+                count += 1
+            }
+            
+            if count != symbols[function].count {
+                throw SemanticError.IncorrectArgumentCount
+            }*/
+            break
+        case .variable:
+            //parse variable, check if name is in symbol table
+            guard case let .variable(name) = expr else {
+                return
+            }
+            guard (symbols[function]![name] != nil) else {
+                throw SemanticError.UndefinedVariable(name)
+            }
+        default:
+            return
+        }
+    }
+    
+    func parseCallForArgs()
 }

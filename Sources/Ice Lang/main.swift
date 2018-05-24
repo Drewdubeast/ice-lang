@@ -9,7 +9,7 @@
 import Foundation
 import LLVM
 
-let lexer = Lexer(for: "n=5; n+n;")
+let lexer = Lexer(for: "def fib(x,n,y) x+n+2+4+y; fib(1,2,3);")
 
 let toks = lexer.lex()
 
