@@ -43,6 +43,7 @@ class SemanticAnalyzer {
     init(with file: File) {
         self.file = file
         symbols = [String : [String : Int]]()
+        symbols["main"] = [String : Int]()
     }
     func analyze() throws {
         // Steps:
@@ -69,10 +70,9 @@ class SemanticAnalyzer {
         }
         
         //check expressions for calls with
-        /*
         for expression in file.expressions {
-            parseExprForSymbols(expression)
-        }*/
+            try parseExprForSymbols(expression, "main")
+        }
         
         print(symbols)
     }
@@ -88,8 +88,6 @@ class SemanticAnalyzer {
             try parseExprForSymbols(expr2, function)
             
         case .call:
-            
-            /*
             guard case let .call(function, args) = expr else {
                 return
             }
@@ -97,21 +95,20 @@ class SemanticAnalyzer {
                 throw SemanticError.UndefinedFunction(function)
             }
             var count = 0
-            for arg in args {
-                guard (symbols[function]![arg] != nil) else {
-                    throw SemanticError.UndefinedVariable(arg)
-                }
+            for _ in args {
                 count += 1
             }
-            
-            if count != symbols[function].count {
+            if count != symbols[function]!.count {
                 throw SemanticError.IncorrectArgumentCount
-            }*/
+            }
             break
         case .variable:
             //parse variable, check if name is in symbol table
             guard case let .variable(name) = expr else {
                 return
+            }
+            guard symbols[function] != nil else {
+                throw SemanticError.UndefinedFunction(function)
             }
             guard (symbols[function]![name] != nil) else {
                 throw SemanticError.UndefinedVariable(name)
@@ -121,5 +118,5 @@ class SemanticAnalyzer {
         }
     }
     
-    func parseCallForArgs()
+    //func parseCallForArgs()
 }

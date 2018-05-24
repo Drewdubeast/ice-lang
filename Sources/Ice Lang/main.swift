@@ -9,7 +9,7 @@
 import Foundation
 import LLVM
 
-let lexer = Lexer(for: "def fib(x,n,y) x+n+2+4+y; fib(1,2,3);")
+let lexer = Lexer(for: "def fib(x) 1+2+2+4+x; fib(x);")
 
 let toks = lexer.lex()
 
@@ -17,8 +17,6 @@ let parser = Parser(for: toks!)
 
 do {
     let file = try parser.parse()
-    print(file)
-    print()
     let analyzer = SemanticAnalyzer(with: file)
     try analyzer.analyze()
 } catch {
