@@ -9,7 +9,7 @@
 import Foundation
 import LLVM
 
-let lexer = Lexer(for: "def fib(x) 1+2+2+4+x; fib(x);")
+let lexer = Lexer(for: "def fib(x) 1+2+2+4+x; def no(x) 1+1; fib(no(x)); 1+1+2; def libraryman(x) x+1;")
 
 let toks = lexer.lex()
 

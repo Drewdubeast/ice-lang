@@ -95,7 +95,8 @@ class SemanticAnalyzer {
                 throw SemanticError.UndefinedFunction(function)
             }
             var count = 0
-            for _ in args {
+            for arg in args {
+                try parseExprForSymbols(arg, function)
                 count += 1
             }
             if count != symbols[function]!.count {
@@ -117,6 +118,4 @@ class SemanticAnalyzer {
             return
         }
     }
-    
-    //func parseCallForArgs()
 }
