@@ -6,7 +6,7 @@ Welcome to Ice Lang, a simple, simple, simple (x100000) little toy language/comp
 
 This little toy language/compiler is for my toy language "ice". I chose the name because it *sounded cool*. So far, it is heavily based on the **Kaleidoscope** toy language in the LLVM tutorials. It currently supports basic one-expression functions and function calls with basic math. 
 
-For example, here is a sample function and function call in *ICE*.
+Here is a sample *ice* program:
 
 ```
 def addTwo(a,b) a + b;
