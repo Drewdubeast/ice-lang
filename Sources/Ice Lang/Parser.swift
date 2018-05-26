@@ -23,6 +23,7 @@ enum ParsingError: Error {
 }
 
 class Parser {
+    // TODO: Add if/else conditional support
     
     var tokens: [Token]
     var index = 0

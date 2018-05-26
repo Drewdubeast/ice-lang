@@ -7,7 +7,6 @@
 //
 
 import Foundation
-//import LLVM
 
 enum SemanticError: Error {
     case UndefinedFunction(String)
@@ -35,6 +34,10 @@ class SemanticAnalyzer {
     // 1. Grab each function and prototype and record number of arguments and symbols used
     // 2. If any of the function calls have incorrect function name or arg count, throw error
     // 3. Go through function bodies - if there are incorrect variables used there, throw error
+    
+    //
+    // TODO: Add file level expression support
+    //
     
     var symbols: [String : [String : Int]] //function name and args associated with it
     
@@ -73,8 +76,6 @@ class SemanticAnalyzer {
         for expression in file.expressions {
             try parseExprForSymbols(expression, "main")
         }
-        
-        print(symbols)
     }
     
     func parseExprForSymbols(_ expr: expr, _ function: String) throws {
