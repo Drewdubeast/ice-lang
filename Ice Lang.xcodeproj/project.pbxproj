@@ -21,6 +21,7 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		7C5A103C20B8821A003E4C4C /* IRGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C5A103B20B8821A003E4C4C /* IRGenerator.swift */; };
 		OBJ_100 /* XCTestManifests.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_18 /* XCTestManifests.swift */; };
 		OBJ_102 /* LLVM.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = "LLVM::LLVM::Product" /* LLVM.framework */; };
 		OBJ_109 /* Alias.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_22 /* Alias.swift */; };
@@ -108,6 +109,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		7C5A103B20B8821A003E4C4C /* IRGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IRGenerator.swift; sourceTree = "<group>"; };
 		"Ice Lang::Ice Lang::Product" /* Ice Lang */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Ice Lang"; sourceTree = BUILT_PRODUCTS_DIR; };
 		"Ice Lang::Ice LangTests::Product" /* Ice_LangTests.xctest */ = {isa = PBXFileReference; lastKnownFileType = file; name = Ice_LangTests.xctest; path = "Ice LangTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		"LLVM::LLVM::Product" /* LLVM.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = LLVM.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -275,7 +277,7 @@
 			path = ".build/checkouts/LLVMSwift.git-7001094716367268658/Sources/LLVM";
 			sourceTree = SOURCE_ROOT;
 		};
-		OBJ_5 /*  */ = {
+		OBJ_5 = {
 			isa = PBXGroup;
 			children = (
 				OBJ_6 /* Package.swift */,
@@ -284,7 +286,6 @@
 				OBJ_19 /* Dependencies */,
 				OBJ_64 /* Products */,
 			);
-			name = "";
 			sourceTree = "<group>";
 		};
 		OBJ_64 /* Products */ = {
@@ -312,6 +313,7 @@
 				OBJ_10 /* Lexer.swift */,
 				OBJ_11 /* Nodes.swift */,
 				OBJ_12 /* Parser.swift */,
+				7C5A103B20B8821A003E4C4C /* IRGenerator.swift */,
 				OBJ_13 /* SemanticAnalyzer.swift */,
 				OBJ_14 /* main.swift */,
 			);
@@ -416,7 +418,7 @@
 			knownRegions = (
 				en,
 			);
-			mainGroup = OBJ_5 /*  */;
+			mainGroup = OBJ_5;
 			productRefGroup = OBJ_64 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -494,6 +496,7 @@
 			files = (
 				OBJ_73 /* File.swift in Sources */,
 				OBJ_74 /* Lexer.swift in Sources */,
+				7C5A103C20B8821A003E4C4C /* IRGenerator.swift in Sources */,
 				OBJ_75 /* Nodes.swift in Sources */,
 				OBJ_76 /* Parser.swift in Sources */,
 				OBJ_77 /* SemanticAnalyzer.swift in Sources */,

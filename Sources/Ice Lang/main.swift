@@ -9,18 +9,25 @@
 import Foundation
 import LLVM
 
-let lexer = Lexer(for: "n=5; n+n;")
-
-let toks = lexer.lex()
-
-let parser = Parser(for: toks!)
+extension String: Error {}
 
 do {
+    guard CommandLine.arguments.count > 1 else {
+        throw "Usage: ice <file>"
+    }
+    
+    let input = try String(contentsOfFile: CommandLine.arguments[1])
+    let lexer = Lexer(for: input)
+    let toks = lexer.lex()
+    let parser = Parser(for: toks!)
     let file = try parser.parse()
-    print(file)
-    print()
     let analyzer = SemanticAnalyzer(with: file)
     try analyzer.analyze()
+    let IRGen = IRGenerator(with: file)
+    try IRGen.emit()
+    IRGen.module.dump()
+    try IRGen.module.verify()
+    
 } catch {
     print(error)
 }
