@@ -4,7 +4,9 @@ Welcome to Ice Lang, a simple, simple, simple (x100000) little toy language/comp
 
 ## Overview ##
 
-This little toy language/compiler is for my toy language "ice". I chose the name because it *sounded cool*. So far, it is heavily based on the **Kaleidoscope** toy language in the LLVM tutorials. It currently supports basic one-expression functions and function calls with basic math. 
+This little toy language/compiler is for my toy language "ice". I chose the name *because it sounded cool*. So far, it is heavily based on the **Kaleidoscope** toy language in the LLVM tutorials. It currently supports basic one-expression functions and function calls with basic math. 
+
+**How it works**: All parts are written in Swift - the lexing, parsing, semantic analysis, and LLVM IR generation. The IR generation is done through **LLVMSwift**, a Swift wrapper for the LLVM C API, written by Harlan Haskins and Robert Widmann: https://github.com/llvm-swift/LLVMSwift
 
 Here is a sample *ice* program:
 
@@ -34,7 +36,7 @@ I would really love to add more features to this language and change up the synt
 
 A few sources I used to help get this rolling:
 
-* Harlan Haskins (@harlanhaskins) - he had several blog posts on the subject that helped immensely
+* Harlan Haskins (@harlanhaskins) - he had several blog posts on the subject that helped immensely, and he released LLVMSwift, which is a Swift wrapper to the LLVM C API.
 * LLVM Tutorials for Kaleidoscope - gave a basic walkthrough of lexing, parsing, and more
 
 ## Authors ## 
