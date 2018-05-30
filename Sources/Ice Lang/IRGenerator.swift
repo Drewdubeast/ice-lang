@@ -67,6 +67,9 @@ class IRGenerator {
                 let comp = builder.buildFCmp(lhsValue, rhsValue, .orderedEqual)
                 return builder.buildIntToFP(comp, type: FloatType.double, signed: false)
             }
+        case .ifelse(let cond, let ifBody, let elseBody):
+            builder.buildCondBr(condition: cond, then: ifBody, else: elseBody)
+            break
         default:
             return 5 as! IRValue
         }

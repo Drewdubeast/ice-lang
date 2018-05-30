@@ -23,10 +23,10 @@ do {
     let file = try parser.parse()
     let analyzer = SemanticAnalyzer(with: file)
     try analyzer.analyze()
-    let IRGen = IRGenerator(with: file)
-    try IRGen.emit()
-    IRGen.module.dump()
-    try IRGen.module.verify()
+    //let IRGen = IRGenerator(with: file)
+    //try IRGen.emit()
+    //IRGen.module.dump()
+    //try IRGen.module.verify()
     
 } catch {
     print(error)
