@@ -15,6 +15,7 @@ enum ParsingError: Error {
     case UndefinedOperator(Character)
     
     case ExpectedCharacter(Character)
+    case ExpectedToken(Token)
     case ExpectedOperator
     case ExpectedDeclaration
     case ExpectedExpression
@@ -205,6 +206,15 @@ class Parser {
         case .identifier: node = try parseIdentifierExpression()
         case .number: node = try parseNumber()
         case .leftParen: node = try parseParens()
+        case .if:
+            _ = pop() //consume if
+            let cond = try parseExpression()
+            let ifBody = try parseExpression()
+            guard case .else = pop() else {
+                throw ParsingError.ExpectedToken(.else)
+            }
+            let elseBody = try parseExpression()
+            return .ifelse(cond, ifBody, elseBody)
         default: throw ParsingError.ExpectedExpression
         }
         return node
@@ -236,20 +246,4 @@ class Parser {
         return PrototypeNode(name: name, args: args)
         
     }
-    
-    
-//     Function -> Prototype Expression
-//     Prototype -> Define Identifier ( Arguments )
-//     Arguments -> Arguments, Identifier | Identifier | ε
-//
-//     PrimaryExpression -> Call | Identifier | Number | ( Expression )
-//     Call -> Identifier ( Parameters )
-//     Parameters -> Parameters, Expression | Expression | ε
-//
-//     Expression -> Identifier | Number | ( Expression )
-//     Expression ->
-//     PrimaryExpression Operator Expression | PrimaryExpression
-//     PrimaryExpression -> Identifier | Number | ( Expression )
-//
-//   NOTE: Trying to implement it by myself, not using the tutorial, just by going off of this
 }

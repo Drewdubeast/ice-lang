@@ -15,7 +15,8 @@ do {
     guard CommandLine.arguments.count > 1 else {
         throw "Usage: ice <file>"
     }
-    
+    let targetMachine: TargetMachine
+    targetMachine = try TargetMachine()
     let input = try String(contentsOfFile: CommandLine.arguments[1])
     let lexer = Lexer(for: input)
     let toks = lexer.lex()
@@ -25,6 +26,7 @@ do {
     try analyzer.analyze()
     let IRGen = IRGenerator(with: file)
     try IRGen.emit()
+    try targetMachine.emitToFile(module: IRGen.module, type: CodegenFileType.bitCode, path: "./ice.out")
     IRGen.module.dump()
     try IRGen.module.verify()
     

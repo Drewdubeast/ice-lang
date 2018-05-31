@@ -67,6 +67,30 @@ class IRGenerator {
                 let comp = builder.buildFCmp(lhsValue, rhsValue, .orderedEqual)
                 return builder.buildIntToFP(comp, type: FloatType.double, signed: false)
             }
+        case .ifelse(let cond, let ifBody, let elseBody):
+            let condComp = builder.buildFCmp(try emitExpr(cond), FloatType.double.constant(0.0), .orderedNotEqual)
+            
+            let ifBB = builder.currentFunction!.appendBasicBlock(named: "if")
+            let elseBB = builder.currentFunction!.appendBasicBlock(named: "else")
+            let mergeBB = builder.currentFunction!.appendBasicBlock(named: "merge")
+            
+            builder.buildCondBr(condition: condComp, then: ifBB, else: elseBB)
+            
+            builder.positionAtEnd(of: ifBB)
+            let ifValue = try emitExpr(ifBody)
+            builder.buildBr(mergeBB)
+            
+            builder.positionAtEnd(of: elseBB)
+            let elseValue = try emitExpr(elseBody)
+            builder.buildBr(mergeBB)
+            
+            builder.positionAtEnd(of: mergeBB)
+            
+            let phi = builder.buildPhi(FloatType.double)
+            phi.addIncoming([(ifValue, ifBB), (elseValue, elseBB)])
+            
+            return phi
+            break
         default:
             return 5 as! IRValue
         }

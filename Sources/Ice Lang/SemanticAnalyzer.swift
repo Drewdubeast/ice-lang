@@ -88,10 +88,7 @@ class SemanticAnalyzer {
             try parseExprForSymbols(expr1, function)
             try parseExprForSymbols(expr2, function)
             
-        case .call:
-            guard case let .call(function, args) = expr else {
-                return
-            }
+        case .call(let function, let args):
             guard (symbols[function] != nil) else {
                 throw SemanticError.UndefinedFunction(function)
             }
@@ -104,11 +101,13 @@ class SemanticAnalyzer {
                 throw SemanticError.IncorrectArgumentCount
             }
             break
-        case .variable:
+        case .ifelse(let cond, let ifBody, let elseBody):
+            try parseExprForSymbols(cond, function)
+            try parseExprForSymbols(ifBody, function)
+            try parseExprForSymbols(elseBody, function)
+            break
+        case .variable(let name):
             //parse variable, check if name is in symbol table
-            guard case let .variable(name) = expr else {
-                return
-            }
             guard symbols[function] != nil else {
                 throw SemanticError.UndefinedFunction(function)
             }
