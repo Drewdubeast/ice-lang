@@ -225,10 +225,8 @@ class Parser {
             guard case Token.operator(.equals) = pop() else {
                 throw ParsingError.ExpectedCharacter("=")
             }
-            guard case .number = pop() else {
-                throw ParsingError.ExpectedNumber
-            }
-            node = .variable(name)
+            let assignment = try parseExpression()
+            node = .assignment(name, assignment)
             break
         default: throw ParsingError.ExpectedExpression
         }

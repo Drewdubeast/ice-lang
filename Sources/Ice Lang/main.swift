@@ -31,7 +31,7 @@ do {
     let parser = Parser(for: toks!)
     let file = try parser.parse()
     print(file)
-    /*
+
     //Analyzing
     let analyzer = SemanticAnalyzer(with: file)
     try analyzer.analyze()
@@ -50,8 +50,8 @@ do {
     task.launch()
     
     //Verify the LLVM Code
-    //IRGen.module.dump()
-    try IRGen.module.verify()*/
+    IRGen.module.dump()
+    try IRGen.module.verify()
     
 } catch {
     print(error)

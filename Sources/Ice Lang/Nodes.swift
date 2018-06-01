@@ -18,10 +18,10 @@ struct PrototypeNode: CustomStringConvertible {
 
 struct AssignmentNode: CustomStringConvertible {
     let variable: expr
-    let value: Double?
+    let value: expr
     
     var description: String {
-        return "AssignmentNode(variable: \(variable) value: \(value ?? nil))"
+        return "AssignmentNode(variable: \(variable) value: \(value))"
     }
 }
 
@@ -30,7 +30,7 @@ struct FunctionNode: CustomStringConvertible{
     let prototype: PrototypeNode
     
     var description: String {
-        return "FunctionNode(prototype: \(prototype)) body: \(body)"
+        return "FunctionNode(prototype: \(prototype)) body: \(body))"
     }
 }
 
@@ -42,6 +42,7 @@ indirect enum expr {
     case binOp(expr, BinaryOperator, expr)
     case ifelse(expr, expr, expr)
     case variable(String)
+    case assignment(String, expr)
 }
 
 

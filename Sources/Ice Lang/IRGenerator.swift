@@ -68,6 +68,10 @@ class IRGenerator {
                 let comp = builder.buildFCmp(lhsValue, rhsValue, .orderedEqual)
                 return builder.buildIntToFP(comp, type: FloatType.double, signed: false)
             }
+        case .assignment(let name, let assignment):
+            let assignmentValue = try emitExpr(assignment)
+            builder.addGlobal(name, initializer: assignmentValue)
+            return assignmentValue
             
         case .ifelse(let cond, let ifBody, let elseBody):
             let condComp = builder.buildFCmp(try emitExpr(cond), FloatType.double.constant(0.0), .orderedNotEqual)
