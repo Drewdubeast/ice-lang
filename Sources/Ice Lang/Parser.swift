@@ -59,7 +59,7 @@ class Parser {
         
         while hasNext() {
             switch(peek()) {
-            case .def:
+            case .block:
                 file.addDefinition(try parseDefinition())
             case .EOF:
                 return file
@@ -227,7 +227,7 @@ class Parser {
     }
     
     func parseDefinition() throws -> FunctionNode {
-        guard case Token.def = pop() else {
+        guard case Token.block = pop() else {
             throw ParsingError.ExpectedDeclaration
         }
         let proto = try parsePrototype()

@@ -90,7 +90,6 @@ class IRGenerator {
             phi.addIncoming([(ifValue, ifBB), (elseValue, elseBB)])
             
             return phi
-            break
         default:
             return 5 as! IRValue
         }
