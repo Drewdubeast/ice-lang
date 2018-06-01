@@ -26,11 +26,12 @@ do {
     //Lexing
     let lexer = Lexer(for: input)
     let toks = lexer.lex()
-    
+
     //Parsing
     let parser = Parser(for: toks!)
     let file = try parser.parse()
-    
+    print(file)
+    /*
     //Analyzing
     let analyzer = SemanticAnalyzer(with: file)
     try analyzer.analyze()
@@ -40,17 +41,35 @@ do {
     try IRGen.emit()
     
     //Output Object File
-    try targetMachine.emitToFile(module: IRGen.module, type: CodegenFileType.object, path: "./ice.o")
+    try targetMachine.emitToFile(module: IRGen.module, type: CodegenFileType.object, path: "./\(CommandLine.arguments[1]).o")
     
     //Assemble - call clang on it
     let task = Process()
     task.launchPath = "/usr/bin/env"
-    task.arguments = ["clang", "-o", "\(CommandLine.arguments[1]).out", "ice.o"]
+    task.arguments = ["clang", "-o", "\(CommandLine.arguments[1]).out", "\(CommandLine.arguments[1]).o"]
     task.launch()
     
     //Verify the LLVM Code
-    try IRGen.module.verify()
+    //IRGen.module.dump()
+    try IRGen.module.verify()*/
     
 } catch {
     print(error)
 }
+/*
+ Planning for having multiple
+ expression functions and conditionals
+ 
+ Currently, only single expression bodies are supported.
+ 
+ Thoughts:
+ 1. have an array of expressions
+ 2. enclose the bodies inside {} characters or something else creative
+ 3. Parse expressions within the functions etc
+ 
+ For main body expressions, if I want to implement variables and assignments eventually:
+ 1. Change equals to assignment operator
+ 2. Change comparison to double '=' operator
+ 3. Use index in file.expressions to make sure that something is declared and assigned before it is used or referenced: IE, only put it in the symbol table if it is assigned a value.
+ 4. could use keyword 'var' to declare a variable
+ */

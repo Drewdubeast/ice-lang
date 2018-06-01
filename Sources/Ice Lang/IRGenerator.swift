@@ -57,6 +57,7 @@ class IRGenerator {
         case .binOp(let lhs, let op, let rhs):
             let lhsValue = try emitExpr(lhs)
             let rhsValue = try emitExpr(rhs)
+            
             switch op {
             case .plus: return builder.buildAdd(lhsValue, rhsValue)
             case .minus: return builder.buildSub(lhsValue, rhsValue)
@@ -67,25 +68,28 @@ class IRGenerator {
                 let comp = builder.buildFCmp(lhsValue, rhsValue, .orderedEqual)
                 return builder.buildIntToFP(comp, type: FloatType.double, signed: false)
             }
+            
         case .ifelse(let cond, let ifBody, let elseBody):
             let condComp = builder.buildFCmp(try emitExpr(cond), FloatType.double.constant(0.0), .orderedNotEqual)
-            
             let ifBB = builder.currentFunction!.appendBasicBlock(named: "if")
             let elseBB = builder.currentFunction!.appendBasicBlock(named: "else")
             let mergeBB = builder.currentFunction!.appendBasicBlock(named: "merge")
             
             builder.buildCondBr(condition: condComp, then: ifBB, else: elseBB)
             
+            //if body
             builder.positionAtEnd(of: ifBB)
             let ifValue = try emitExpr(ifBody)
             builder.buildBr(mergeBB)
             
+            //else body
             builder.positionAtEnd(of: elseBB)
             let elseValue = try emitExpr(elseBody)
             builder.buildBr(mergeBB)
             
             builder.positionAtEnd(of: mergeBB)
             
+            //phi node for conditional
             let phi = builder.buildPhi(FloatType.double)
             phi.addIncoming([(ifValue, ifBB), (elseValue, elseBB)])
             

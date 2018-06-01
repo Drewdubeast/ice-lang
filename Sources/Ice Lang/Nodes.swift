@@ -16,6 +16,15 @@ struct PrototypeNode: CustomStringConvertible {
     }
 }
 
+struct AssignmentNode: CustomStringConvertible {
+    let variable: expr
+    let value: Double?
+    
+    var description: String {
+        return "AssignmentNode(variable: \(variable) value: \(value ?? nil))"
+    }
+}
+
 struct FunctionNode: CustomStringConvertible{
     let body: expr
     let prototype: PrototypeNode

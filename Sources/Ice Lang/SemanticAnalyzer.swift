@@ -50,6 +50,8 @@ class SemanticAnalyzer {
             symbols[name] = [String : Int]()
             //add function args
             for arg in prototype.value.args {
+                
+                //make sure symbol isn't in symbol table already - if it is, then it must be a duplicate
                 guard (symbols[name]![arg] == nil) else {
                     throw SemanticError.DuplicateArgument(arg)
                 }
