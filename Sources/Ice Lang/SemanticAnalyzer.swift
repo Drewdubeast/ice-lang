@@ -12,6 +12,7 @@ enum SemanticError: Error {
     case UndefinedFunction(String)
     case UndefinedVariable(String)
     case DuplicateArgument(String)
+    case DuplicateVariable(String)
     case IncorrectArgumentCount
 }
 
@@ -106,9 +107,24 @@ class SemanticAnalyzer {
             guard symbols[function] != nil else {
                 throw SemanticError.UndefinedFunction(function)
             }
-            guard (symbols[function]![name] != nil) else {
-                throw SemanticError.UndefinedVariable(name)
+            if (symbols[function]![name] == nil) {
+                //try main function
+                guard symbols["main"]![name] != nil else {
+                    throw SemanticError.UndefinedVariable(name)
+                }
             }
+        case .assignment(let name, let assignment):
+            //try parsing the assignment
+            try parseExprForSymbols(assignment, function)
+            
+            //check variable that it is being stored in if it exists
+            if(symbols[function]?[name] != nil) {
+                throw SemanticError.DuplicateVariable(name)
+            }
+            
+            //add to symbol table
+            symbols[function]?[name] = 1
+            break
         default:
             return
         }

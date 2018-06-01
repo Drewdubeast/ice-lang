@@ -31,7 +31,7 @@ do {
     let parser = Parser(for: toks!)
     let file = try parser.parse()
     print(file)
-
+    
     //Analyzing
     let analyzer = SemanticAnalyzer(with: file)
     try analyzer.analyze()
@@ -46,7 +46,7 @@ do {
     //Assemble - call clang on it
     let task = Process()
     task.launchPath = "/usr/bin/env"
-    task.arguments = ["clang", "-o", "\(CommandLine.arguments[1]).out", "\(CommandLine.arguments[1]).o"]
+    task.arguments = ["clang", "-o", "\(CommandLine.arguments[1]).cube", "\(CommandLine.arguments[1]).o"]
     task.launch()
     
     //Verify the LLVM Code
