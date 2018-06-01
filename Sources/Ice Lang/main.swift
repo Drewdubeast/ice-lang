@@ -30,7 +30,6 @@ do {
     //Parsing
     let parser = Parser(for: toks!)
     let file = try parser.parse()
-    print(file)
     
     //Analyzing
     let analyzer = SemanticAnalyzer(with: file)
@@ -72,4 +71,7 @@ do {
  2. Change comparison to double '=' operator
  3. Use index in file.expressions to make sure that something is declared and assigned before it is used or referenced: IE, only put it in the symbol table if it is assigned a value.
  4. could use keyword 'var' to declare a variable
+ 
+ More Notes:
+ 1. Could also add an assignments/variables thing to the File class
  */

@@ -45,4 +45,8 @@ indirect enum expr {
     case assignment(String, expr)
 }
 
+//TODO: create variable node and change variable expression to var reference, i.e. varRef
+//This will allow for separation between expression and variables and will make it easier to parse and check for semantic correctness.
+//Then, add a section to the File class where I can add variable assignments! Much easier to parse. Can emit easily in IRGen stage
+
 
