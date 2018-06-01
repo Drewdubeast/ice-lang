@@ -8,12 +8,17 @@
 import Foundation
 import LLVM
 
+enum IRGenerationError: Error {
+    case UndefinedVariable(String)
+}
+
 class IRGenerator {
     let file: File
     let module: Module
     let builder: IRBuilder
     
     private var parameterValues = [String: IRValue]()
+    private var variables = [String: IRValue]()
     
     init(with file: File) {
         self.file = file
@@ -52,8 +57,13 @@ class IRGenerator {
             let callArgs = try args.map(emitExpr)
             return builder.buildCall(function, args: callArgs)
         case .variable(let name):
-            let param = parameterValues[name]
-            return param!
+            if let param = parameterValues[name] {
+                return param
+            }
+            if let param = variables[name] {
+                return param
+            }
+            throw IRGenerationError.UndefinedVariable(name)
         case .binOp(let lhs, let op, let rhs):
             let lhsValue = try emitExpr(lhs)
             let rhsValue = try emitExpr(rhs)
@@ -69,8 +79,14 @@ class IRGenerator {
                 return builder.buildIntToFP(comp, type: FloatType.double, signed: false)
             }
         case .assignment(let name, let assignment):
+            //find IRValue for assignment
             let assignmentValue = try emitExpr(assignment)
-            builder.addGlobal(name, initializer: assignmentValue)
+            
+            //build the variable
+            _ = builder.addGlobal(name, initializer: assignmentValue)
+            
+            //add variable to the map
+            variables[name] = assignmentValue
             return assignmentValue
             
         case .ifelse(let cond, let ifBody, let elseBody):
