@@ -55,7 +55,9 @@ class IRGenerator {
             let prototype = file.prototype(name)
             let function = emitPrototype(prototype!)
             let callArgs = try args.map(emitExpr)
+            
             return builder.buildCall(function, args: callArgs)
+            
         case .variable(let name):
             if let param = parameterValues[name] {
                 return param
@@ -64,20 +66,27 @@ class IRGenerator {
                 return param
             }
             throw IRGenerationError.UndefinedVariable(name)
+            
         case .binOp(let lhs, let op, let rhs):
             let lhsValue = try emitExpr(lhs)
             let rhsValue = try emitExpr(rhs)
             
             switch op {
-            case .plus: return builder.buildAdd(lhsValue, rhsValue)
-            case .minus: return builder.buildSub(lhsValue, rhsValue)
-            case .mult: return builder.buildMul(lhsValue, rhsValue)
-            case .div: return builder.buildDiv(lhsValue, rhsValue)
-            case .mod: return builder.buildRem(lhsValue, rhsValue)
+            case .plus:
+                return builder.buildAdd(lhsValue, rhsValue)
+            case .minus:
+                return builder.buildSub(lhsValue, rhsValue)
+            case .mult:
+                return builder.buildMul(lhsValue, rhsValue)
+            case .div:
+                return builder.buildDiv(lhsValue, rhsValue)
+            case .mod:
+                return builder.buildRem(lhsValue, rhsValue)
             case .equals:
                 let comp = builder.buildFCmp(lhsValue, rhsValue, .orderedEqual)
                 return builder.buildIntToFP(comp, type: FloatType.double, signed: false)
             }
+            
         case .assignment(let name, let assignment):
             //find IRValue for assignment
             let assignmentValue = try emitExpr(assignment)
@@ -121,15 +130,20 @@ class IRGenerator {
     
     func emitDefinition(_ definition: FunctionNode) throws -> Function {
         let function = emitPrototype(definition.prototype)
+        
         for (idx, arg) in definition.prototype.args.enumerated() {
             let param = function.parameter(at: idx)!
             parameterValues[arg] = param
         }
+        
         let entryBlock = function.appendBasicBlock(named: "entry")
         builder.positionAtEnd(of: entryBlock)
+        
         let expr = try emitExpr(definition.body)
         builder.buildRet(expr)
+        
         parameterValues.removeAll()
+        
         return function
     }
     
