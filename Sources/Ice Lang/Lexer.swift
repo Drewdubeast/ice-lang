@@ -21,7 +21,7 @@ enum BinaryOperator: UnicodeScalar {
 }
 
 enum Token: Equatable {
-    case leftParen, rightParen, def, extern, comma, semicolon, `if`, then, `else`, colon
+    case leftParen, rightParen, block, extern, comma, semicolon, `if`, then, `else`, colon, `var`
     case identifier(String)
     case number(Double)
     case `operator`(BinaryOperator)
@@ -31,7 +31,7 @@ enum Token: Equatable {
     static func ==(lhs: Token, rhs: Token) -> Bool {
         switch (lhs, rhs) {
         case (.leftParen, .leftParen), (.rightParen, .rightParen),
-             (.def, .def), (.extern, .extern), (.comma, .comma),
+             (.block, .block), (.var, .var), (.extern, .extern), (.comma, .comma),
              (.semicolon, .semicolon), (.if, .if), (.then, .then),
              (.else, .else), (.colon, .colon):
             return true
@@ -135,7 +135,8 @@ class Lexer {
             }
             
             switch(str) {
-                case "def": return .def
+                case "var": return .var
+                case "block": return .block
                 case "extern": return .extern
                 case "if": return .if
                 case "then": return .then

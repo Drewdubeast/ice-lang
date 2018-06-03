@@ -11,6 +11,8 @@ import Foundation
 enum SemanticError: Error {
     case UndefinedFunction(String)
     case UndefinedVariable(String)
+    case DuplicateArgument(String)
+    case DuplicateVariable(String)
     case IncorrectArgumentCount
 }
 
@@ -28,17 +30,6 @@ class SemanticAnalyzer {
     // -calling a variable or function that hasn't been defined should be caught here
     // -incorrect amount of arguments
     //
-    
-    //
-    // Steps:
-    // 1. Grab each function and prototype and record number of arguments and symbols used
-    // 2. If any of the function calls have incorrect function name or arg count, throw error
-    // 3. Go through function bodies - if there are incorrect variables used there, throw error
-    
-    //
-    // TODO: Add file level expression support
-    //
-    
     var symbols: [String : [String : Int]] //function name and args associated with it
     
     let file: File
@@ -60,6 +51,10 @@ class SemanticAnalyzer {
             symbols[name] = [String : Int]()
             //add function args
             for arg in prototype.value.args {
+                //make sure symbol isn't in symbol table already - if it is, then it must be a duplicate
+                guard (symbols[name]![arg] == nil) else {
+                    throw SemanticError.DuplicateArgument(arg)
+                }
                 symbols[name]![arg] = 1
             }
         }
@@ -111,9 +106,24 @@ class SemanticAnalyzer {
             guard symbols[function] != nil else {
                 throw SemanticError.UndefinedFunction(function)
             }
-            guard (symbols[function]![name] != nil) else {
-                throw SemanticError.UndefinedVariable(name)
+            if (symbols[function]![name] == nil) {
+                //try main function
+                guard symbols["main"]![name] != nil else {
+                    throw SemanticError.UndefinedVariable(name)
+                }
             }
+        case .assignment(let name, let assignment):
+            //try parsing the assignment
+            try parseExprForSymbols(assignment, function)
+            
+            //check variable that it is being stored in if it exists
+            if(symbols[function]?[name] != nil) {
+                throw SemanticError.DuplicateVariable(name)
+            }
+            
+            //add to symbol table
+            symbols[function]?[name] = 1
+            break
         default:
             return
         }

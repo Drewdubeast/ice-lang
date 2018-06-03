@@ -10,12 +10,18 @@ import Foundation
 
 public class File: CustomStringConvertible {
     
+    private(set) var externs = [PrototypeNode]()
     private(set) var prototypes = [String: PrototypeNode]()
     private(set) var definitions = [FunctionNode]()
     private(set) var expressions = [expr]()
     
     func prototype(_ name: String) -> PrototypeNode? {
         return prototypes[name]
+    }
+    
+    func addExtern(_ proto: PrototypeNode) {
+        externs.append(proto)
+        prototypes[proto.name] = proto
     }
 
     func addDefinition(_ functionNode: FunctionNode) {

@@ -59,8 +59,10 @@ class Parser {
         
         while hasNext() {
             switch(peek()) {
-            case .def:
+            case .block:
                 file.addDefinition(try parseDefinition())
+            case .extern:
+                file.addExtern(try parseExtern())
             case .EOF:
                 return file
             default:
@@ -215,6 +217,17 @@ class Parser {
             }
             let elseBody = try parseExpression()
             return .ifelse(cond, ifBody, elseBody)
+        case .var:
+            _ = pop()
+            guard case let .identifier(name) = pop() else {
+                throw ParsingError.ExpectedIdentifier
+            }
+            guard case Token.operator(.equals) = pop() else {
+                throw ParsingError.ExpectedCharacter("=")
+            }
+            let assignment = try parseExpression()
+            node = .assignment(name, assignment)
+            break
         default: throw ParsingError.ExpectedExpression
         }
         return node
@@ -227,13 +240,21 @@ class Parser {
     }
     
     func parseDefinition() throws -> FunctionNode {
-        guard case Token.def = pop() else {
+        guard case Token.block = pop() else {
             throw ParsingError.ExpectedDeclaration
         }
         let proto = try parsePrototype()
         let e = try parseExpression()
 
         return FunctionNode(body: e, prototype: proto)
+    }
+    func parseExtern() throws -> PrototypeNode {
+        guard case Token.extern = pop() else {
+            throw ParsingError.ExpectedToken(.extern)
+        }
+        let proto = try parsePrototype()
+        
+        return proto
     }
     
     func parsePrototype() throws -> PrototypeNode {
@@ -246,4 +267,8 @@ class Parser {
         return PrototypeNode(name: name, args: args)
         
     }
+    
+    //Variables in ice:
+    //var [name] = [double value]
+    //[declared variable] = [double value]
 }

@@ -8,12 +8,17 @@
 import Foundation
 import LLVM
 
+enum IRGenerationError: Error {
+    case UndefinedVariable(String)
+}
+
 class IRGenerator {
     let file: File
     let module: Module
     let builder: IRBuilder
     
     private var parameterValues = [String: IRValue]()
+    private var variables = [String: IRValue]()
     
     init(with file: File) {
         self.file = file
@@ -50,47 +55,74 @@ class IRGenerator {
             let prototype = file.prototype(name)
             let function = emitPrototype(prototype!)
             let callArgs = try args.map(emitExpr)
+            
             return builder.buildCall(function, args: callArgs)
+            
         case .variable(let name):
-            let param = parameterValues[name]
-            return param!
+            if let param = parameterValues[name] {
+                return param
+            }
+            if let param = variables[name] {
+                return param
+            }
+            throw IRGenerationError.UndefinedVariable(name)
+            
         case .binOp(let lhs, let op, let rhs):
             let lhsValue = try emitExpr(lhs)
             let rhsValue = try emitExpr(rhs)
+            
             switch op {
-            case .plus: return builder.buildAdd(lhsValue, rhsValue)
-            case .minus: return builder.buildSub(lhsValue, rhsValue)
-            case .mult: return builder.buildMul(lhsValue, rhsValue)
-            case .div: return builder.buildDiv(lhsValue, rhsValue)
-            case .mod: return builder.buildRem(lhsValue, rhsValue)
+            case .plus:
+                return builder.buildAdd(lhsValue, rhsValue)
+            case .minus:
+                return builder.buildSub(lhsValue, rhsValue)
+            case .mult:
+                return builder.buildMul(lhsValue, rhsValue)
+            case .div:
+                return builder.buildDiv(lhsValue, rhsValue)
+            case .mod:
+                return builder.buildRem(lhsValue, rhsValue)
             case .equals:
                 let comp = builder.buildFCmp(lhsValue, rhsValue, .orderedEqual)
                 return builder.buildIntToFP(comp, type: FloatType.double, signed: false)
             }
+            
+        case .assignment(let name, let assignment):
+            //find IRValue for assignment
+            let assignmentValue = try emitExpr(assignment)
+            
+            //build the variable
+            _ = builder.addGlobal(name, initializer: assignmentValue)
+            
+            //add variable to the map
+            variables[name] = assignmentValue
+            return assignmentValue
+            
         case .ifelse(let cond, let ifBody, let elseBody):
             let condComp = builder.buildFCmp(try emitExpr(cond), FloatType.double.constant(0.0), .orderedNotEqual)
-            
             let ifBB = builder.currentFunction!.appendBasicBlock(named: "if")
             let elseBB = builder.currentFunction!.appendBasicBlock(named: "else")
             let mergeBB = builder.currentFunction!.appendBasicBlock(named: "merge")
             
             builder.buildCondBr(condition: condComp, then: ifBB, else: elseBB)
             
+            //if body
             builder.positionAtEnd(of: ifBB)
             let ifValue = try emitExpr(ifBody)
             builder.buildBr(mergeBB)
             
+            //else body
             builder.positionAtEnd(of: elseBB)
             let elseValue = try emitExpr(elseBody)
             builder.buildBr(mergeBB)
             
             builder.positionAtEnd(of: mergeBB)
             
+            //phi node for conditional
             let phi = builder.buildPhi(FloatType.double)
             phi.addIncoming([(ifValue, ifBB), (elseValue, elseBB)])
             
             return phi
-            break
         default:
             return 5 as! IRValue
         }
@@ -98,15 +130,20 @@ class IRGenerator {
     
     func emitDefinition(_ definition: FunctionNode) throws -> Function {
         let function = emitPrototype(definition.prototype)
+        
         for (idx, arg) in definition.prototype.args.enumerated() {
             let param = function.parameter(at: idx)!
             parameterValues[arg] = param
         }
+        
         let entryBlock = function.appendBasicBlock(named: "entry")
         builder.positionAtEnd(of: entryBlock)
+        
         let expr = try emitExpr(definition.body)
         builder.buildRet(expr)
+        
         parameterValues.removeAll()
+        
         return function
     }
     
