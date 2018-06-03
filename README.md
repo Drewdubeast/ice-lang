@@ -107,6 +107,9 @@ for example:
 var myVar = 10;
 ```
 
+## Compilation ##
+The source file is lexed, parsed, and analyzed, then used to generate LLVM IR. This IR is used then assembled and the compiler outputs a `.cube` executable. This executable is your compiled program.
+
 ## Future ##
 
 I would really love to add more features to this language and change up the syntax a bit to really make it my own. Things I plan on doing in the future are:
