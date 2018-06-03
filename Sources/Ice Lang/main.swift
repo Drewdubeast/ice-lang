@@ -49,7 +49,7 @@ do {
     task.launch()
     
     //Verify the LLVM Code
-    IRGen.module.dump()
+    //IRGen.module.dump()
     try IRGen.module.verify()
     
 } catch {
